@@ -9,7 +9,7 @@ export default defineConfig({
   },
   vite: {
     server: {
-      // `npm run dev` + `npm run dev:api` in two terminals: forward API calls to the Worker.
+      // `pnpm dev` + `pnpm dev:api` in two terminals: forward API calls to the Worker.
       proxy: {
         '/api': {
           target: 'http://localhost:8787',

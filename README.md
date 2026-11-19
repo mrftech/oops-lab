@@ -33,13 +33,15 @@ Don't rename a file after launch: its name is the key for its love count.
 
 ## Develop
 
+This project uses **pnpm only** (`npm install` and `yarn` are blocked by a preinstall check). Enable it with `corepack enable` or `npm i -g pnpm`.
+
 ```powershell
-npm install
-npm run db:migrate:local   # once: creates the local D1 table
-npm run dev                # site on http://localhost:4321
-npm run dev:api            # (second terminal) Worker on :8787; /api is proxied from the site
-npm run preview            # or: build + serve everything exactly like production on :8787
-npm run check              # type-check site + worker
+pnpm install
+pnpm db:migrate:local   # once: creates the local D1 table
+pnpm dev                # site on http://localhost:4321
+pnpm dev:api            # (second terminal) Worker on :8787; /api is proxied from the site
+pnpm preview            # or: build + serve everything exactly like production on :8787
+pnpm check              # type-check site + worker
 ```
 
 Without `dev:api` the site still works; hearts just show no counts.
@@ -47,10 +49,10 @@ Without `dev:api` the site still works; hearts just show no counts.
 ## Deploy (Cloudflare)
 
 ```powershell
-npx wrangler login
-npx wrangler d1 create oopslab     # paste the returned database_id into wrangler.jsonc
-npm run db:migrate                 # apply schema to the remote database
-npm run deploy
+pnpm wrangler login
+pnpm wrangler d1 create oopslab     # paste the returned database_id into wrangler.jsonc
+pnpm db:migrate                 # apply schema to the remote database
+pnpm cf:deploy
 ```
 
 Then in the Cloudflare dashboard add a **rate limiting rule** for `/api/*` (e.g. 10 POSTs/min per IP). It is the abuse protection for the love button; add Turnstile only if you actually see abuse.
