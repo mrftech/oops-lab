@@ -5,6 +5,9 @@
   "account_id": "fb5fb655a663a60fbc82092d8af3e187",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
+  // Main site on the root domain. Cloudflare creates the DNS record and certificate on deploy.
+  // Exact hostname only (no wildcard): future projects get their own Worker + subdomain.
+  "routes": [{ "pattern": "oopslab.xyz", "custom_domain": true }],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
