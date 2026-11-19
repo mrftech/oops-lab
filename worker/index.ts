@@ -9,6 +9,13 @@ type Env = {
 
 const app = new Hono<Env>();
 
+// API responses are JSON only: never let a browser sniff or embed them.
+app.use('/api/*', async (c, next) => {
+  await next();
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('Cross-Origin-Resource-Policy', 'same-origin');
+});
+
 // Valid slugs come from the static site (dist/projects.json, generated at build time).
 // Cached per isolate; refreshed every few minutes so a new deploy's projects get picked up.
 let slugCache: { at: number; slugs: Set<string> } | null = null;

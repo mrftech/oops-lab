@@ -8,6 +8,10 @@ export default defineConfig({
     port: 4321,
   },
   vite: {
+    build: {
+      // Never inline scripts into the HTML, so the CSP in public/_headers can stay `script-src 'self'`.
+      assetsInlineLimit: 0,
+    },
     server: {
       // `pnpm dev` + `pnpm dev:api` in two terminals: forward API calls to the Worker.
       proxy: {

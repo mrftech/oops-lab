@@ -8,6 +8,11 @@
   // Main site on the root domain. Cloudflare creates the DNS record and certificate on deploy.
   // Exact hostname only (no wildcard): future projects get their own Worker + subdomain.
   "routes": [{ "pattern": "oopslab.xyz", "custom_domain": true }],
+  // Only reachable through oopslab.xyz, so the zone's rate-limit rule can't be bypassed via *.workers.dev.
+  "workers_dev": false,
+  "preview_urls": false,
+  // Workers Logs: request and error visibility in the dashboard (Worker > Logs).
+  "observability": { "enabled": true },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
