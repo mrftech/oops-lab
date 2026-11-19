@@ -1,0 +1,138 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import LoveButton from './LoveButton.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, tagline, status, tags, order, thumb, code, url } = project.data;
+
+const statusLabel = { live: 'Live', testing: 'Testing', building: 'Building', archived: 'Archived' }[status];
+const search = [title, tagline, status, ...tags].join(' ').toLowerCase();
+const index = String(order).padStart(3, '0');
+---
+
+<article class="project" data-id={project.id} data-status={status} data-search={search} data-url={url}>
+  <div class={`thumb ${thumb}`} aria-hidden="true">
+    <span class="corner">{code}</span>
+    {thumb === 'world' && <div class="globe-art"><span>✳</span></div>}
+    {thumb === 'bloom' && <div class="thumb-icon">✳</div>}
+    {
+      thumb === 'tiny' && (
+        <div class="mini-ui">
+          <div class="mini-top"><i></i><i></i><i></i></div>
+          <div class="mini-body">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+        </div>
+      )
+    }
+    {thumb === 'museum' && <div class="four04">404</div>}
+    {
+      thumb === 'prompt' && (
+        <div class="prompt-art">
+          <span>$ next idea</span>
+          <strong>What if your imagination had a shuffle button? <span class="enter">↵</span></strong>
+        </div>
+      )
+    }
+    {
+      thumb === 'dice' && (
+        <div class="dice-art"><i></i><i></i><i></i><i></i></div>
+      )
+    }
+  </div>
+  <div class="card-body">
+    <div class="card-meta">
+      <span class={`status ${status}`}>{statusLabel}</span>
+      <span class="project-index">EXP—{index}</span>
+    </div>
+    <h3>{url ? <a href={url} class="title-link">{title}</a> : title}</h3>
+    <p>{tagline}</p>
+    <div class="card-foot">
+      <div class="tags">{tags.map((t) => <span class="tag">{t}</span>)}</div>
+      <div class="actions">
+        <LoveButton slug={project.id} title={title} />
+        {
+          url ? (
+            <a class="open-card" href={url} aria-label={`Open ${title}`}>↗</a>
+          ) : (
+            <span class="soon">soon</span>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</article>
+
+<style>
+  .project { background: var(--white); border: 1.5px solid #d4d8cd; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.18s, box-shadow 0.18s; }
+  .project:hover { transform: translateY(-5px); box-shadow: 5px 7px 0 #d8dfd2; }
+  .project[hidden] { display: none; }
+  .project.flash { outline: 3px solid #465fff; outline-offset: 4px; }
+
+  .thumb { height: 210px; border-bottom: 1px solid var(--line); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .corner { position: absolute; top: 16px; left: 16px; z-index: 3; font: 10px var(--mono); color: #1a211b; background: var(--white); border: 1px solid #20281e; padding: 6px 8px; border-radius: 4px; }
+
+  /* bloom */
+  .thumb.bloom { background: #d9d2ff; }
+  .thumb.bloom::after { content: ''; width: 150px; height: 150px; border-radius: 50%; background: #e4fa89; border: 2px solid #242423; box-shadow: 38px 6px 0 -10px #ff9869, -43px 15px 0 -23px #80abff; transform: rotate(20deg); }
+  .thumb-icon { z-index: 2; font-size: 58px; position: absolute; transform: rotate(-20deg); }
+
+  /* tiny */
+  .thumb.tiny { background: #d2edb8; }
+  .mini-ui { width: 197px; height: 139px; border: 1.8px solid #1c2820; border-radius: 9px; background: var(--white); transform: rotate(-6deg); box-shadow: 7px 8px 0 #263a2c; overflow: hidden; }
+  .mini-top { height: 21px; background: #e8eddb; border-bottom: 1.5px solid #1c2820; display: flex; align-items: center; gap: 5px; padding: 0 9px; }
+  .mini-top i { width: 5px; height: 5px; background: #a0ac91; border-radius: 50%; }
+  .mini-body { padding: 15px; display: flex; gap: 5px; align-items: flex-end; height: 119px; }
+  .bar { width: 19%; border: 1.5px solid #263a2c; border-radius: 3px 3px 0 0; background: #c0b2ff; }
+  .bar:nth-child(1) { height: 50%; }
+  .bar:nth-child(2) { height: 73%; background: #ffac8f; }
+  .bar:nth-child(3) { height: 94%; background: #d8fa79; }
+  .bar:nth-child(4) { height: 60%; }
+  .bar:nth-child(5) { height: 85%; background: #9bd4e0; }
+
+  /* world */
+  .thumb.world { background: #b7d9fd; }
+  .globe-art { width: 163px; height: 163px; border-radius: 50%; border: 2.5px solid #17251e; background: #c6e6c7; box-shadow: 10px 12px 0 #355c52; position: relative; overflow: hidden; transform: rotate(-12deg); }
+  .globe-art::before { content: ''; position: absolute; inset: 23px 4px 30px -31px; background: #6ea7b0; border-radius: 47% 46% 30% 35%; transform: rotate(35deg); }
+  .globe-art::after { content: ''; position: absolute; inset: 60px -33px 22px 55px; background: #80b273; border-radius: 50% 47% 20% 62%; transform: rotate(31deg); }
+  .globe-art span { position: absolute; font-size: 26px; top: 7px; right: 19px; z-index: 2; }
+
+  /* museum */
+  .thumb.museum { background: #ffbe9c; }
+  .four04 { font-size: 105px; font-weight: 900; letter-spacing: -0.12em; transform: rotate(-10deg); text-shadow: 7px 8px 0 #f9e5b7; -webkit-text-stroke: 1px #171d1a; }
+
+  /* prompt */
+  .thumb.prompt { background: #f8edbd; }
+  .prompt-art { width: 215px; transform: rotate(5deg); padding: 20px; background: var(--white); border: 2px solid #1a211b; border-radius: 12px; box-shadow: 8px 8px 0 #272922; font-family: var(--mono); }
+  .prompt-art span { display: block; font-size: 10px; color: #5c6157; margin-bottom: 9px; }
+  .prompt-art strong { font-size: 18px; line-height: 1.2; letter-spacing: -1px; }
+  .prompt-art .enter { display: inline; color: #d8512b; margin: 0; font-size: inherit; }
+
+  /* dice */
+  .thumb.dice { background: #b6dad0; }
+  .dice-art { width: 130px; height: 130px; border: 2px solid #192923; border-radius: 20px; background: var(--white); transform: rotate(16deg); box-shadow: 14px 14px 0 #3b6f6d; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 25px; }
+  .dice-art i { background: #192923; border-radius: 50%; }
+
+  /* body */
+  .card-body { padding: 21px 21px 18px; flex: 1; display: flex; flex-direction: column; }
+  .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 17px; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font: 700 10px var(--mono); letter-spacing: 0.045em; text-transform: uppercase; }
+  .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #54a777; }
+  .status.testing::before { background: #f0a843; }
+  .status.archived::before { background: #8e948e; }
+  .status.building::before { background: #7e81d5; }
+  .project-index { font: 11px var(--mono); color: var(--faint); }
+  .card-body h3 { margin: 0 0 8px; font-size: 25px; font-weight: 860; letter-spacing: -0.045em; }
+  .title-link:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .card-body p { font-size: 13px; color: #55604f; line-height: 1.6; margin: 0 0 27px; min-height: 42px; }
+  .card-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 16px; border-top: 1px solid #e2e5dc; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { background: #eff0e9; color: #4f584d; border-radius: 5px; font: 10px var(--mono); padding: 5px 7px; }
+  .actions { display: flex; align-items: center; gap: 8px; }
+  .open-card { font-size: 20px; padding: 0 2px; color: var(--ink); }
+  .soon { font: 10px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+</style>

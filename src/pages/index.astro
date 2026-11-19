@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const hasSamples = projects.some((p) => p.data.sample);
+const label = hasSamples ? 'example experiments' : 'experiments';
+
+const filters = [
+  { key: 'all', label: 'Everything' },
+  { key: 'live', label: '● Live' },
+  { key: 'testing', label: '◐ Testing' },
+  { key: 'building', label: '◌ Building' },
+  { key: 'archived', label: '◦ Archived' },
+];
+---
+
+<Layout>
+  <section class="container hero">
+    <div>
+      <div class="eyebrow"><span style="color:#7f8d62;font-size:20px">✳</span> WELCOME TO THE INTERNET WORKBENCH</div>
+      <h1>Make stuff.<br /><span class="highlight">Break stuff.</span><br /><em>Repeat.</em></h1>
+      <p class="hero-desc">A public playground for tiny tools, strange ideas, and experiments that might just work. Some polished. Some messy. All worth trying.</p>
+      <div class="buttons">
+        <a class="button dark" href="#experiments">Explore the experiments <span>↗</span></a>
+        <button class="button" id="surpriseBtn" type="button">Surprise me <span>✳</span></button>
+      </div>
+      <div class="hero-aside"><span class="scribble-arrow">↳</span> Made with curiosity. Occasionally with bugs.</div>
+    </div>
+    <div class="specimen" role="img" aria-label="Playful illustration: an orbiting happy accident">
+      <div class="specimen-tag">SPECIMEN / 001</div>
+      <div class="specimen-star">✳</div>
+      <div class="artifact"><div class="art-disc"></div><div class="art-face">:)</div><div class="art-orbit"></div></div>
+      <div class="art-sticker">oops! → interesting...</div>
+      <div class="art-label">PROPERTY OF NO ONE'S<br />COMFORT ZONE</div>
+    </div>
+  </section>
+
+  <div class="ticker">
+    <div class="container">
+      <div class="ticker-piece"><span class="diamond">✳</span> BUILD SMALL</div>
+      <div class="ticker-piece"><span class="diamond">✳</span> LEARN LOUD</div>
+      <div class="ticker-piece"><span class="diamond">✳</span> KEEP THE WEIRD</div>
+      <div class="ticker-piece"><span class="diamond">✳</span> SHIP BEFORE PERFECT</div>
+    </div>
+  </div>
+
+  <section class="container section" id="experiments">
+    <div class="section-top">
+      <div>
+        <div class="section-kicker">The experiment shelf</div>
+        <h2>Fresh from the lab.</h2>
+      </div>
+      <p class="section-sub">A living collection of projects in all stages of existence. Pick one, poke around, see what happens.</p>
+    </div>
+
+    <div class="filterbar">
+      <div class="pills" role="group" aria-label="Filter projects by status">
+        {
+          filters.map((f) => (
+            <button class={`pill${f.key === 'all' ? ' active' : ''}`} type="button" data-filter={f.key} aria-pressed={f.key === 'all'}>
+              {f.label}
+            </button>
+          ))
+        }
+      </div>
+      <label class="searchbox">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" id="search" placeholder="Find an experiment..." aria-label="Search experiments" />
+      </label>
+    </div>
+
+    <div class="count" id="count" data-total={projects.length} data-label={label} aria-live="polite">{projects.length} {label}</div>
+    <div class="project-grid" id="projects">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+    <div class="empty" id="empty" hidden>Nothing on this shelf. Try another search or filter ✳</div>
+    {hasSamples && <p class="footnote">✳ Some entries are illustrative placeholders, not real deployments yet.</p>}
+  </section>
+
+  <section class="container principle" id="about">
+    <div class="big-note">
+      <div class="eyebrow">THE LAB'S ONE RULE</div>
+      <blockquote>It's only a bad idea until you try it.</blockquote>
+      <div class="note-footer">— probably someone at 2:37am</div>
+    </div>
+    <div class="principle-copy">
+      <div class="section-kicker">Why OopsLab exists</div>
+      <h2>Proof that curiosity beats perfection.</h2>
+      <p>Not a polished portfolio pretending everything worked on the first try. OopsLab is a public workbench: a place to make, test, break, document, and occasionally stumble into something genuinely useful.</p>
+      <div class="manifesto-list">
+        <div class="manifesto-item"><span>01/</span> Make things you wish existed.</div>
+        <div class="manifesto-item"><span>02/</span> Show the experiments, not just the trophies.</div>
+        <div class="manifesto-item"><span>03/</span> Leave the door open for the next idea.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="note-section" id="notes">
+    <div class="container note-layout">
+      <div>
+        <div class="section-kicker">Field notes</div>
+        <h2>Even the mistakes<br />make the cut.</h2>
+        <p class="section-sub" style="margin-top:17px">Every experiment has a story. Short updates on what shipped, what failed, and what surprised me. A lab notebook, not a press release.</p>
+        <div class="buttons" style="margin-top:22px"><a href="#experiments" class="button small">Back to experiments ↗</a></div>
+      </div>
+      <div class="note-card">
+        <div class="eyebrow">SAMPLE FIELD NOTE / 000</div>
+        <h3>Small experiments are easier to start. That's the whole point.</h3>
+        <p>In a real note: the question, what I built, what surprised me, and what I'd do differently.</p>
+        <div class="tiny-label">SAMPLE ENTRY · REAL NOTES COMING SOON</div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('.project')];
+  const pills = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const search = document.querySelector<HTMLInputElement>('#search')!;
+  const count = document.querySelector<HTMLElement>('#count')!;
+  const empty = document.querySelector<HTMLElement>('#empty')!;
+  let active = 'all';
+
+  function update() {
+    const q = search.value.trim().toLowerCase();
+    let visible = 0;
+    for (const card of cards) {
+      const match = (active === 'all' || card.dataset.status === active) && (card.dataset.search ?? '').includes(q);
+      card.hidden = !match;
+      if (match) visible++;
+    }
+    count.textContent = `${visible} of ${cards.length} ${count.dataset.label}`;
+    empty.hidden = visible !== 0;
+  }
+
+  pills.forEach((pill) =>
+    pill.addEventListener('click', () => {
+      active = pill.dataset.filter!;
+      pills.forEach((p) => {
+        const on = p === pill;
+        p.classList.toggle('active', on);
+        p.setAttribute('aria-pressed', String(on));
+      });
+      update();
+    }),
+  );
+  search.addEventListener('input', update);
+
+  // "Surprise me": open a random project that has a URL, or highlight a random card if none are linked yet.
+  document.querySelector('#surpriseBtn')!.addEventListener('click', () => {
+    const linked = cards.filter((c) => c.dataset.url);
+    const pool = linked.length ? linked : cards;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick.dataset.url) {
+      window.location.href = pick.dataset.url;
+      return;
+    }
+    search.value = '';
+    pills.find((p) => p.dataset.filter === 'all')!.click();
+    pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    pick.classList.add('flash');
+    setTimeout(() => pick.classList.remove('flash'), 1600);
+  });
+
+  update();
+</script>

@@ -1,0 +1,103 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+}
+const { slug, title } = Astro.props;
+---
+
+<button class="love" type="button" data-love={slug} aria-pressed="false" aria-label={`Love ${title}`}>
+  <span class="heart" aria-hidden="true">♡</span>
+  <span class="n" data-count aria-live="polite"></span>
+</button>
+
+<style>
+  .love {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    border-radius: 100px;
+    padding: 6px 11px 6px 9px;
+    font: 700 12px var(--mono);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .love:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .heart { font-size: 16px; line-height: 1; transition: transform 0.2s; }
+  .love[aria-pressed='true'] { background: #ffe3d6; border-color: #e5532d; }
+  .love[aria-pressed='true'] .heart { color: #e5532d; transform: scale(1.15); }
+  .n:empty { display: none; }
+  .love:has(.n:empty) { padding-right: 9px; }
+</style>
+
+<script>
+  const KEY = 'oopslab:loved';
+
+  function readLoved(): Set<string> {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(KEY) ?? '[]'));
+    } catch {
+      return new Set();
+    }
+  }
+  function writeLoved(set: Set<string>) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify([...set]));
+    } catch {
+      /* private mode etc: the heart just won't persist */
+    }
+  }
+
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-love]')];
+  const loved = readLoved();
+  const counts: Record<string, number> = {};
+
+  function paint(btn: HTMLButtonElement) {
+    const slug = btn.dataset.love!;
+    const on = loved.has(slug);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.querySelector('.heart')!.textContent = on ? '♥' : '♡';
+    const n = btn.querySelector<HTMLElement>('[data-count]')!;
+    n.textContent = slug in counts ? String(counts[slug]) : '';
+  }
+
+  buttons.forEach(paint);
+
+  // If the API is unreachable (e.g. `astro dev` without the Worker) the hearts still render, just without counts.
+  fetch('/api/loves')
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((data: { loves: Record<string, number> }) => {
+      buttons.forEach((b) => {
+        counts[b.dataset.love!] = data.loves[b.dataset.love!] ?? 0;
+      });
+      buttons.forEach(paint);
+    })
+    .catch(() => {});
+
+  buttons.forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      const slug = btn.dataset.love!;
+      if (loved.has(slug)) return; // one love per visitor per project (per browser)
+
+      // optimistic update
+      loved.add(slug);
+      counts[slug] = (counts[slug] ?? 0) + 1;
+      paint(btn);
+
+      try {
+        const res = await fetch(`/api/loves/${encodeURIComponent(slug)}`, { method: 'POST' });
+        if (!res.ok) throw new Error(String(res.status));
+        const data: { count: number } = await res.json();
+        counts[slug] = data.count;
+        writeLoved(loved);
+      } catch {
+        loved.delete(slug);
+        counts[slug] = Math.max(0, (counts[slug] ?? 1) - 1);
+        paint(btn);
+      }
+      paint(btn);
+    }),
+  );
+</script>
