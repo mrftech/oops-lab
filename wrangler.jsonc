@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "oopslab",
+  "name": "oops-lab",
+  // TawhidMaruf (Personal). Pinned so local Wrangler commands can't hit another account.
+  "account_id": "fb5fb655a663a60fbc82092d8af3e187",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
@@ -14,9 +16,7 @@
     {
       "binding": "DB",
       "database_name": "oopslab",
-      // Run `pnpm wrangler d1 create oopslab` and paste the returned id here before deploying.
-      // Local dev works with this placeholder.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "589b1d7e-b5f0-4c58-baee-41158d62a9d8",
       "migrations_dir": "migrations"
     }
   ]

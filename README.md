@@ -50,7 +50,7 @@ Without `dev:api` the site still works; hearts just show no counts.
 
 ```powershell
 pnpm wrangler login
-pnpm wrangler d1 create oopslab     # paste the returned database_id into wrangler.jsonc
+# (done) database `oopslab` already created; its id and the personal account_id are in wrangler.jsonc
 pnpm db:migrate                 # apply schema to the remote database
 pnpm cf:deploy
 ```
